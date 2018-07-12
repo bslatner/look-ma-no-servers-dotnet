@@ -1,0 +1,27 @@
+﻿{
+    "Comment": "Example State Machine",
+    "StartAt": "LanguageChoice",
+    "States": {
+        "LanguageChoice": {
+            "Type": "Choice",
+            "Default": "EnglishGreeting",
+            "Choices": [
+                {
+                    "Variable": "$.Language",
+                    "StringEquals": "Spanish",
+                    "Next": "SpanishGreeting"
+                }
+            ]
+        },
+        "EnglishGreeting": {
+            "Type": "Task",
+            "Resource": "${EnglishGreetingTask.Arn}",
+            "End":  true 
+        },
+        "SpanishGreeting": {
+            "Type": "Task",
+            "Resource": "${SpanishGreetingTask.Arn}",
+            "End":  true 
+        }
+    }
+}
