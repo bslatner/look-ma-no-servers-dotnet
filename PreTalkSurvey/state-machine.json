@@ -1,0 +1,115 @@
+﻿{
+  "Comment": "Pre-Talk Survey State Machine",
+  "StartAt": "Question1",
+  "States": {
+    "Question1": {
+      "Type": "Task",
+      "Resource": "${Question1Task.Arn}",
+      "Next": "WaitQuestion1"
+    },
+    "WaitQuestion1": {
+      "Type": "Task",
+      "Resource": "${WaitSmsResponseActivity}",
+      "Next": "EvalQuestion1"
+    },
+    "EvalQuestion1": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.IsValidResponse",
+          "BooleanEquals": false,
+          "Next": "ErrorQuestion1"
+        }
+      ],
+      "Default": "Question2"
+    },
+    "ErrorQuestion1": {
+      "Type": "Task",
+      "Resource": "${ErrorQuestion1Task.Arn}",
+      "Next": "Question1"
+    },
+    "Question2": {
+      "Type": "Task",
+      "Resource": "${Question2Task.Arn}",
+      "Next": "WaitQuestion2"
+    },
+    "WaitQuestion2": {
+      "Type": "Task",
+      "Resource": "${WaitSmsResponseActivity}",
+      "Next": "EvalQuestion2"
+    },
+    "EvalQuestion2": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.IsValidResponse",
+          "BooleanEquals": false,
+          "Next": "ErrorQuestion2"
+        }
+      ],
+      "Default": "Question3"
+    },
+    "ErrorQuestion2": {
+      "Type": "Task",
+      "Resource": "${ErrorQuestion2Task.Arn}",
+      "Next": "Question2"
+    },
+    "Question3": {
+      "Type": "Task",
+      "Resource": "${Question3Task.Arn}",
+      "Next": "WaitQuestion3"
+    },
+    "WaitQuestion3": {
+      "Type": "Task",
+      "Resource": "${WaitSmsResponseActivity}",
+      "Next": "EvalQuestion3"
+    },
+    "EvalQuestion3": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.IsValidResponse",
+          "BooleanEquals": false,
+          "Next": "ErrorQuestion3"
+        }
+      ],
+      "Default": "Question4"
+    },
+    "ErrorQuestion3": {
+      "Type": "Task",
+      "Resource": "${ErrorQuestion3Task.Arn}",
+      "Next": "Question3"
+    },
+    "Question4": {
+      "Type": "Task",
+      "Resource": "${Question4Task.Arn}",
+      "Next": "WaitQuestion4"
+    },
+    "WaitQuestion4": {
+      "Type": "Task",
+      "Resource": "${WaitSmsResponseActivity}",
+      "Next": "EvalQuestion4"
+    },
+    "EvalQuestion4": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.IsValidResponse",
+          "BooleanEquals": false,
+          "Next": "ErrorQuestion4"
+        }
+      ],
+      "Default": "EndSurvey"
+    },
+    "ErrorQuestion4": {
+      "Type": "Task",
+      "Resource": "${ErrorQuestion4Task.Arn}",
+      "Next": "Question4"
+    },
+    "EndSurvey": {
+      "Type": "Task",
+      "Resource": "${EndSurveyTask.Arn}",
+      "End": true
+    }
+  }
+}

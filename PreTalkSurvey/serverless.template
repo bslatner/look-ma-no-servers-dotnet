@@ -1,0 +1,483 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Transform": "AWS::Serverless-2016-10-31",
+    "Description": "Take a brief pre-talk survey using text messages that, incidentally, demonstrates core AWS serverless concepts.",
+    "Parameters": {
+        "DefaultReadCapacity": {
+            "Type": "Number",
+            "Description": "Default read capacity for the DynamoDB tables.",
+            "Default": "3",
+            "MinValue": 1
+        },
+        "DefaultWriteCapacity": {
+            "Type": "Number",
+            "Description": "Default write capacity for the DynamoDB tables.",
+            "Default": "1",
+            "MinValue": 1
+        },
+        "TwilioAccountSid": {
+            "Type": "String",
+            "Description": "The Twilio account SID."
+        },
+        "TwilioAccountAuthorizationToken": {
+            "Type": "String",
+            "Description": "The Twilio account authorization token."
+        },
+        "TwilioPhoneNumber": {
+            "Type": "String",
+            "Description": "The Twilio phone number."
+        }
+    },
+
+    "Resources": {
+
+        "SurveyTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "PhoneNumberHash",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "PhoneNumberHash",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": { "Ref": "DefaultReadCapacity" },
+                    "WriteCapacityUnits": { "Ref": "DefaultWriteCapacity" }
+                }
+            }
+        },
+
+        "ReceiveSms": {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.TwilioHandler::ReceiveSmsAsync",
+                "Runtime": "dotnetcore2.0",
+                "CodeUri": "",
+                "Description": "Receive an incoming SMS message.",
+                "MemorySize": 128,
+                "Timeout": 30,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" },
+                        "StateMachineArn": { "Ref":  "StateMachine" },
+                        "WaitSmsResponseActivityArn": { "Ref": "WaitSmsResponseActivity" }
+                    }
+                },
+                "Events": {
+                    "PostResource": {
+                        "Type": "Api",
+                        "Properties": {
+                            "Path": "/receive-sms",
+                            "Method": "POST"
+                        }
+                    }
+                }
+            }
+        },
+
+        "GetReport": {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.ReportHandler::ReportAsync",
+                "Runtime": "dotnetcore2.0",
+                "CodeUri": "",
+                "Description": "Produce a report of survey responses.",
+                "MemorySize": 128,
+                "Timeout": 30,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" }
+                    }
+                },
+                "Events": {
+                    "GetResource": {
+                        "Type": "Api",
+                        "Properties": {
+                            "Path": "/report",
+                            "Method": "GET"
+                        }
+                    }
+                }
+            }
+        },
+
+        "GetReportOptions": {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.ReportHandler::ReportOptionsAsync",
+                "Runtime": "dotnetcore2.0",
+                "CodeUri": "",
+                "Description": "Return options for /report.",
+                "MemorySize": 128,
+                "Timeout": 30,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Events": {
+                    "OptionsGetReport": {
+                        "Type": "Api",
+                        "Properties": {
+                            "Path": "/report",
+                            "Method": "OPTIONS"
+                        }
+                    }
+                }
+            }
+        },
+
+        "WaitSmsResponseActivity": {
+            "Type": "AWS::StepFunctions::Activity",
+            "Properties": {
+                "Name": "WaitSmsResponse"
+            }
+        },
+
+        "WaitSmsResponsePoller": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::WaitSmsAsync",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Poll WaitSmsResponse step function activity",
+                "MemorySize": 128,
+                "Timeout": 245,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" },
+                        "WaitSmsResponseActivityArn": { "Ref": "WaitSmsResponseActivity" }
+                    }
+                }
+            }
+        },
+
+        "WaitSmsResponsePollerEvent": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "ScheduleExpression": "rate(4 minutes)",
+                "Targets": [
+                    {
+                        "Id": "WaitSmsResponsePoller",
+                        "Arn": { "Fn::GetAtt": [ "WaitSmsResponsePoller", "Arn" ] }
+                    }
+                ]
+            }
+        },
+
+        "WaitSmsResponsePollerEventPermissions": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": { "Fn::GetAtt": [ "WaitSmsResponsePoller", "Arn" ]
+            },
+            "Action": "lambda:InvokeFunction",
+            "Principal": "events.amazonaws.com",
+            "SourceArn": { "Fn::GetAtt": [ "WaitSmsResponsePollerEvent", "Arn" ] }
+            }
+        },
+
+        "Question1Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question1Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Ask question #1.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "ErrorQuestion1Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion1Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Error message for question #1.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "Question2Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question2Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Ask question #2.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "ErrorQuestion2Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion2Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Error message for question #2.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "Question3Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question3Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Ask question #3.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "ErrorQuestion3Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion3Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Error message for question #3.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "Question4Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question4Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Ask question #4.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "ErrorQuestion4Task": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion4Async",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Error message for question #4.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "EndSurveyTask": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::EndSurveyAsync",
+                "Runtime": "dotnetcore2.0",
+                "Description": "Error message for question #4.",
+                "MemorySize": 128,
+                "Timeout": 65,
+                "Role": { "Fn::GetAtt": [ "LambdaRole", "Arn" ] },
+                "Environment": {
+                    "Variables": {
+                        "SurveyTable": { "Ref": "SurveyTable" },
+                        "TwilioAccountSid": { "Ref": "TwilioAccountSid" },
+                        "TwilioAccountAuthorizationToken": { "Ref": "TwilioAccountAuthorizationToken" },
+                        "TwilioPhoneNumber": { "Ref": "TwilioPhoneNumber" }
+                    }
+                }
+            }
+        },
+
+        "StateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+                "RoleArn": { "Fn::GetAtt": [ "StateMachineRole", "Arn" ] },
+                "DefinitionString": { "Fn::Sub": "" }
+            }
+        },
+
+        "LambdaRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "pre-talk-survey-resources",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "VisualEditor0",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "dynamodb:BatchGetItem",
+                                        "dynamodb:BatchWriteItem",
+                                        "dynamodb:DeleteItem",
+                                        "dynamodb:DescribeTable",
+                                        "dynamodb:GetItem",
+                                        "dynamodb:PutItem",
+                                        "dynamodb:UpdateItem",
+                                        "dynamodb:Scan"
+                                    ],
+                                    "Resource": [
+                                        { "Fn::GetAtt": [ "SurveyTable", "Arn" ] }
+                                    ]
+                                },
+                                {
+                                    "Sid": "VisualEditor1",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "states:GetActivityTask",
+                                        "states:StartExecution",
+                                        "states:SendTaskSuccess",
+                                        "states:SendTaskFailure"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+            }
+        },
+
+
+        "StateMachineRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": { "Fn::Sub": "states.${AWS::Region}.amazonaws.com" }
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "StepFunctionLambdaInvoke",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+
+    },
+
+    "Outputs": {
+        "SurveyTable": { "Value": { "Ref": "SurveyTable" } },
+        "ApiUrl": { "Value": { "Fn::Sub": [ "https://${ApiRef}.execute-api.us-east-1.amazonaws.com", { "ApiRef": {"Ref" : "ServerlessRestApi" }} ]} }
+    }
+}
