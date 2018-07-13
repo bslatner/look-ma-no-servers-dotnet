@@ -32,7 +32,7 @@ namespace PreTalkSurvey
         {
             new Question("skill-dotnet", "What is your skill level with .NET? Respond 1 to 5, with 1 being \"I've never used .NET\" and 5 being \"I'm a .NET ninja\"", ResponseType.Numeric1To5),
             new Question("familiar-aws", "How familiar are you with AWS? Respond 1 to 5, with 1 being \"not at all familiar\" and 5 being \"I'm an AWS expert\"", ResponseType.Numeric1To5),
-            new Question("familiar-aws-serverless", "How familiar are you with AWS's serverless technologies? Respond 1 to 5, with 1 being \"not at all familiar\" and 5 being \"I eat Lambda function for breakfast\"", ResponseType.Numeric1To5),
+            new Question("familiar-aws-serverless", "How familiar are you with AWS's serverless technologies? Respond 1 to 5, with 1 being \"not at all familiar\" and 5 being \"I eat Lambda functions for breakfast\"", ResponseType.Numeric1To5),
             new Question("understand-aws-security", "Do you understand how AWS IAM users, groups, roles, and policies work? Respond yes or no (or true/false or 1/0 if you're hardcore)", ResponseType.YesNo)
         };
 
