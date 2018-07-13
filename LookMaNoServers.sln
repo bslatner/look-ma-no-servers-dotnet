@@ -15,6 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreTalkSurvey", "PreTalkSur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorldStepFunction", "HelloWorldStepFunction\HelloWorldStepFunction.csproj", "{A15A341B-CA37-4A75-86E3-19003CFB0D75}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4DDDB409-01F5-43CA-BBE1-6F08C60EDFFF}"
+	ProjectSection(SolutionItems) = preProject
+		build-pre-talk-survey.cmd = build-pre-talk-survey.cmd
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
