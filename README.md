@@ -5,6 +5,8 @@ Thanks for attending my talk on doing fun serverless things with .NET on AWS.
 If you're using Visual Studio, you should
 [install the Visual Studio tools](https://aws.amazon.com/visualstudio/) first.
 
+If you like using PowerShell, you can get the [AWS tools for PowerShell](https://aws.amazon.com/powershell/).
+
 Here's how to run the demos.
 
 ## General Stuff
