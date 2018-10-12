@@ -4,8 +4,8 @@
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <ItemGroup>
-	<PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="2.0.4" />
-  <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+	<PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="2.1.0" />
+  <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
