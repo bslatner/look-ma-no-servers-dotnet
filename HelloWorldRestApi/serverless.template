@@ -9,7 +9,7 @@
       "Type" : "AWS::Serverless::Function",
       "Properties": {
         "Handler": "HelloWorldRestApi::HelloWorldRestApi.Functions::Get",
-        "Runtime": "dotnetcore2.0",
+        "Runtime": "dotnetcore2.1",
         "CodeUri": "",
         "MemorySize": 128,
         "Timeout": 30,

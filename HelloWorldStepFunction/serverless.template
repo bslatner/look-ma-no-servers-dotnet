@@ -11,7 +11,7 @@
         "Properties" : {
             "Handler" : "HelloWorldStepFunction::HelloWorldStepFunction.StepFunctionTasks::EnglishGreeting",
             "Role"    : {"Fn::GetAtt" : [ "LambdaRole", "Arn"]},
-            "Runtime" : "dotnetcore2.0",
+            "Runtime" : "dotnetcore2.1",
             "MemorySize" : 128,
             "Timeout" : 30
         }
@@ -22,7 +22,7 @@
         "Properties" : {
             "Handler" : "HelloWorldStepFunction::HelloWorldStepFunction.StepFunctionTasks::SpanishGreeting",
             "Role"    : {"Fn::GetAtt" : [ "LambdaRole", "Arn"]},
-            "Runtime" : "dotnetcore2.0",
+            "Runtime" : "dotnetcore2.1",
             "MemorySize" : 128,
             "Timeout" : 30
         }

@@ -57,7 +57,7 @@
             "Type": "AWS::Serverless::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.TwilioHandler::ReceiveSmsAsync",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "CodeUri": "",
                 "Description": "Receive an incoming SMS message.",
                 "MemorySize": 128,
@@ -89,7 +89,7 @@
             "Type": "AWS::Serverless::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.ReportHandler::ReportAsync",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "CodeUri": "",
                 "Description": "Produce a report of survey responses.",
                 "MemorySize": 128,
@@ -116,7 +116,7 @@
             "Type": "AWS::Serverless::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.ReportHandler::ReportOptionsAsync",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "CodeUri": "",
                 "Description": "Return options for /report.",
                 "MemorySize": 128,
@@ -145,7 +145,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::WaitSmsAsync",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Poll WaitSmsResponse step function activity",
                 "MemorySize": 128,
                 "Timeout": 245,
@@ -190,7 +190,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question1Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Ask question #1.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -210,7 +210,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion1Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Error message for question #1.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -230,7 +230,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question2Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Ask question #2.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -250,7 +250,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion2Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Error message for question #2.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -270,7 +270,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question3Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Ask question #3.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -290,7 +290,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion3Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Error message for question #3.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -310,7 +310,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::Question4Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Ask question #4.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -330,7 +330,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::ErrorQuestion4Async",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Error message for question #4.",
                 "MemorySize": 128,
                 "Timeout": 65,
@@ -350,7 +350,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Handler": "PreTalkSurvey::PreTalkSurvey.StepFunctionTasks::EndSurveyAsync",
-                "Runtime": "dotnetcore2.0",
+                "Runtime": "dotnetcore2.1",
                 "Description": "Error message for question #4.",
                 "MemorySize": 128,
                 "Timeout": 65,

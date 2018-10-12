@@ -12,7 +12,7 @@
     "profile"                : "** your profile name here **",
     "region"                 : "us-east-1",
     "configuration"          : "Release",
-    "framework"              : "netcoreapp2.0",
+    "framework"              : "netcoreapp2.1",
     "s3-prefix"              : "HelloWorldAspNet/",
     "s3-bucket"              : "** your bucket name here **",
     "template"               : "serverless.template",
